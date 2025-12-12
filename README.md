@@ -1,0 +1,2 @@
+# btsinifi
+bilişim sınıfı duyuruları
