@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilişim Sınıfı Duyuru Sitesi</title>
+    <style>
+        /* Koyu Tema ve Genel Tasarım */
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #1f1f1f;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .announcement {
+            background-color: #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            position: relative;  /* Duyuru kutusunun içinde mutlak pozisyon kullanmak için */
+        }
+
+        .announcement h2 {
+            margin: 0;
+            display: inline-block;  /* Başlık ve sil butonunu aynı satıra yerleştirir */
+        }
+
+        .delete-btn {
+            background-color: #dc3545;  /* Kırmızı renk */
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            font-size: 25px;  /* Çarpı işareti için büyüklük */
+            cursor: pointer;
+            position: absolute;  /* Sil butonunu konumlandırıyoruz */
+            top: 10px;  /* Üstten 10px boşluk bırakıyoruz */
+            right: 10px;  /* Sağdan 10px boşluk bırakıyoruz */
+            width: 30px;  /* Butonun genişliği */
+            height: 30px;  /* Butonun yüksekliği */
+            border-radius: 5px;  /* Kare yapmak için köşeleri yuvarlatıyoruz */
+            display: flex;  /* Flexbox ile düzenleme */
+            justify-content: center;  /* Yatayda ortalama */
+            align-items: center;  /* Dikeyde ortalama */
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+
+        .delete-btn span {
+            font-size: 20px;  /* X işaretinin büyüklüğü */
+        }
+
+        .comment-section {
+            background-color: #444;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        .comment {
+            background-color: #555;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+
+        .comment-form input[type="text"], .comment-form textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            background-color: #333;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 5px;
+        }
+
+        .comment-form button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .comment-form button:hover {
+            background-color: #218838;
+        }
+
+        .login-form {
+            background-color: #1f1f1f;
+            padding: 20px;
+            border-radius: 5px;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #333;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+
+        .login-message {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        .add-announcement-form {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .add-announcement-form input,
+        .add-announcement-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #444;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 5px;
+        }
+
+        .add-announcement-form button {
+            background-color: #17a2b8;
+        }
+
+        .add-announcement-form button:hover {
+            background-color: #138496;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Bilişim Sınıfı Duyuru Sitesi</h1>
+</header>
+
+<div class="container">
+    <!-- Kullanıcı Girişi -->
+    <div id="login-form" class="login-form">
+        <h3>Giriş Yap</h3>
+        <input type="text" id="email" placeholder="E-posta" />
+        <input type="password" id="password" placeholder="Şifre" />
+        <button onclick="login()">Giriş Yap</button>
+        <p id="login-error" class="error"></p>
+    </div>
+
+    <!-- Kullanıcı Girişi Sonrası Duyuru Sayfası -->
+    <div id="announcements-page" style="display:none;">
+        <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
+        
+        <!-- Owner için Duyuru Ekleme Formu -->
+        <div id="add-announcement-form" class="add-announcement-form" style="display:none;">
+            <h3>Duyuru Ekle</h3>
+            <input type="text" id="announcement-title" placeholder="Duyuru Başlığı" />
+            <textarea id="announcement-content" placeholder="Duyuru İçeriği"></textarea>
+            <button onclick="postAnnouncement()">Duyuru Gönder</button>
+        </div>
+
+        <div id="announcements-list"></div>
+    </div>
+</div>
+
+<script>
+    // Sabit verilerle giriş ve kullanıcı doğrulama
+    const validUsers = [
+        { email: "owner@bilisim.com", password: "12345", role: "owner" },
+        { email: "admin@bilisim.com", password: "admin", role: "admin" },
+        { email: "student@bilisim.com", password: "student", role: "student" }
+    ];
+
+    let loggedInUser = null;
+    let announcements = [];
+
+    function login() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const user = validUsers.find(u => u.email === email && u.password === password);
+
+        if (user) {
+            loggedInUser = user;
+            showAnnouncementsPage();
+        } else {
+            document.getElementById('login-error').innerText = 'Geçersiz e-posta veya şifre!';
+        }
+    }
+
+    function showAnnouncementsPage() {
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('announcements-page').style.display = 'block';
+        
+        // Eğer kullanıcı owner ise duyuru ekleme formunu göster
+        if (loggedInUser.role === 'owner') {
+            document.getElementById('add-announcement-form').style.display = 'block';
+        }
+
+        // Duyuruları güncelle
+        updateAnnouncements();
+    }
+
+    function logout() {
+        loggedInUser = null;
+        document.getElementById('login-form').style.display = 'block';
+        document.getElementById('announcements-page').style.display = 'none';
+    }
+
+    function postAnnouncement() {
+        const title = document.getElementById('announcement-title').value;
+        const content = document.getElementById('announcement-content').value;
+
+        if (title && content) {
+            const newAnnouncement = {
+                id: Date.now(),  // Benzersiz ID oluştur
+                title: title,
+                content: content,
+                comments: []
+            };
+
+            announcements.push(newAnnouncement);
+
+            // Formu temizle
+            document.getElementById('announcement-title').value = '';
+            document.getElementById('announcement-content').value = '';
+
+            updateAnnouncements();
+        } else {
+            alert('Duyuru başlığı ve içeriği boş bırakılamaz!');
+        }
+    }
+
+    function postComment(announcementId) {
+        const commentText = document.getElementById(`comment${announcementId}`).value;
+        
+        if (commentText) {
+            const announcement = announcements.find(a => a.id === announcementId);
+            if (announcement) {
+                announcement.comments.push(commentText);
+                document.getElementById(`comment${announcementId}`).value = '';
+                updateComments(announcementId);
+            }
+        } else {
+            alert('Yorum boş bırakılamaz!');
+        }
+    }
+
+    function updateComments(announcementId) {
+        const announcement = announcements.find(a => a.id === announcementId);
+        if (announcement) {
+            const commentsContainer = document.getElementById(`comments${announcementId}`);
+            commentsContainer.innerHTML = '';
+
+            announcement.comments.forEach(comment => {
+                const commentDiv = document.createElement('div');
+                commentDiv.classList.add('comment');
+                commentDiv.textContent = comment;
+                commentsContainer.appendChild(commentDiv);
+            });
+        }
+    }
+
+    function updateAnnouncements() {
+        const announcementsList = document.getElementById('announcements-list');
+        announcementsList.innerHTML = '';
+
+        announcements.forEach(announcement => {
+            const announcementDiv = document.createElement('div');
+            announcementDiv.classList.add('announcement');
+            announcementDiv.innerHTML = `
+                <h2>${announcement.title}</h2>
+                <p>${announcement.content}</p>
+                <div class="comment-section">
+                    <h4>Yorumlar:</h4>
+                    <div id="comments${announcement.id}"></div>
+                    <div class="comment-form">
+                        <input type="text" id="comment${announcement.id}" placeholder="Yorumunuzu yazın" />
+                        <button onclick="postComment(${announcement.id})">Yorum Yap</button>
+                    </div>
+                </div>
+                <button class="delete-btn" onclick="deleteAnnouncement(${announcement.id})">
+                    <span>×</span>
+                </button>
+            `;
+            announcementsList.appendChild(announcementDiv);
+
+            updateComments(announcement.id);
+        });
+    }
+
+    function deleteAnnouncement(announcementId) {
+        announcements = announcements.filter(a => a.id !== announcementId);
+        updateAnnouncements();
+    }
+</script>
+
+</body>
+</html>
