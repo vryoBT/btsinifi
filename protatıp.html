@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bilişim Sınıfı Duyuru Sitesi</title>
+    <style>
+        /* --- GENEL STİLLER --- */
+        body {
+            background-color: #121212;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            transition: background 0.3s ease;
+        }
+
+        .overlay {
+            background-color: rgba(0, 0, 0, 0.6);
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        header { background-color: rgba(31, 31, 31, 0.8); padding: 20px; text-align: center; }
+        .container { padding: 20px; max-width: 900px; margin: 0 auto; }
+
+        /* --- TAŞMAYI ENGELLEYEN VE YENİ SATIR DESTEĞİ --- */
+        .announcement h2, .announcement p, .comment-text {
+            word-wrap: break-word; overflow-wrap: break-word; word-break: break-all; white-space: pre-wrap;
+        }
+
+        .announcement {
+            background-color: rgba(51, 51, 51, 0.9);
+            padding: 15px; margin: 10px 0; border-radius: 5px; position: relative;
+        }
+
+        /* --- SAĞ ÜST KONTROLLER (KÜÇÜK) --- */
+        .top-controls {
+            position: fixed; right: 10px; top: 10px; z-index: 10001;
+            display: flex; flex-direction: column; gap: 5px; align-items: flex-end;
+        }
+
+        #show-credits-btn {
+            background: rgba(0, 255, 0, 0.1); color: #00ff00; border: 1px solid rgba(0,255,0,0.3);
+            padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold;
+        }
+
+        .wallpaper-config {
+            background: rgba(255, 255, 255, 0.1); padding: 5px; border-radius: 4px;
+            display: none; flex-direction: column; gap: 2px; font-size: 9px; color: #ccc;
+        }
+
+        /* --- YÖNETİM PANELİ --- */
+        .admin-panel {
+            background: rgba(255, 0, 0, 0.1); border: 1px solid rgba(255, 0, 0, 0.3);
+            padding: 15px; border-radius: 5px; margin-bottom: 20px;
+        }
+        .user-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid #444; }
+        .ban-btn { background: #ff4d4d; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; }
+        .unban-btn { background: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; }
+
+        /* --- DİĞER ELEMANLAR --- */
+        .delete-btn {
+            position: absolute; top: 10px; right: 10px; width: 30px; height: 30px;
+            background-color: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 20px;
+        }
+
+        .comment-section { background-color: rgba(68, 68, 68, 0.8); padding: 10px; margin-top: 10px; border-radius: 5px; }
+        .comment { background-color: rgba(85, 85, 85, 0.8); padding: 8px; margin: 5px 0; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .comment-delete-btn { background: none; color: #ff6b6b; border: 1px solid #ff6b6b; font-size: 10px; padding: 2px 5px; cursor: pointer; border-radius: 3px; }
+
+        input, textarea { width: 100%; padding: 10px; margin: 10px 0; background-color: #333; border: 1px solid #444; color: white; border-radius: 5px; box-sizing: border-box; }
+        button { background-color: #28a745; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer; }
+        .logout-btn { background: #ff8c00; padding: 8px 12px; margin-bottom: 10px; }
+
+        /* --- CREDITS --- */
+        #credits-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; color: #00ff00; display: none; z-index: 99999; text-align: center; overflow: hidden; }
+        #credits-text { position: absolute; width: 100%; animation: rollCredits 20s linear forwards; font-size: 24px; line-height: 2.5; }
+        @keyframes rollCredits { 0% { transform: translateY(100%); } 100% { transform: translateY(-500%); } }
+    </style>
+</head>
+<body>
+
+<div class="overlay">
+    <div class="top-controls">
+        <button id="show-credits-btn" onclick="showCredits()">Credits</button>
+        <div class="wallpaper-config" id="wallpaper-setting">
+            <span>Wallpaper Değiştir:</span>
+            <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="changeWallpaper(this)">
+            <button onclick="document.getElementById('fileInput').click()" style="padding:2px; font-size:9px; background:#444;">Dosya Seç</button>
+            <span onclick="resetWallpaper()" style="cursor:pointer; color:#ff8080; margin-top:2px;">[Sıfırla]</span>
+        </div>
+    </div>
+
+    <header><h1>Bilişim Sınıfı Duyuru Sitesi</h1></header>
+
+    <div class="container">
+        <div id="login-form" style="background-color: #1f1f1f; padding: 20px; border-radius: 5px; max-width: 420px; margin: 0 auto 20px;">
+            <h3>Giriş Yap</h3>
+            <input type="text" id="email" placeholder="E-posta" />
+            <input type="password" id="password" placeholder="Şifre" />
+            <input type="text" id="displayName" placeholder="Görünen Ad" />
+            <button onclick="login()" style="width:100%;">Giriş Yap</button>
+            <p id="login-error" style="color:#ff8080;"></p>
+        </div>
+
+        <div id="announcements-page" style="display:none;">
+            <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
+            <div id="welcome" style="margin-bottom:10px; font-size:14px; color:#bbb;"></div>
+
+            <div id="admin-management-panel" class="admin-panel" style="display:none;">
+                <h4>Öğrenci Yönetimi (Banla/Aç)</h4>
+                <div id="student-list"></div>
+            </div>
+
+            <div id="add-announcement-form" style="display:none;">
+                <h3>Yeni Duyuru Ekle</h3>
+                <input type="text" id="announcement-title" placeholder="Başlık" maxlength="200" />
+                <textarea id="announcement-content" placeholder="İçerik..." rows="4"></textarea>
+                <button onclick="postAnnouncement()" style="width:100%;">Gönder</button>
+            </div>
+            <div id="announcements-list"></div>
+        </div>
+    </div>
+</div>
+
+<div id="credits-screen">
+    <div id="credits-text">
+        <p>MEHMET — 6/F</p><p>İBRAHİM — 6/F</p><p>KAMİL — 6/F</p><p>ALPER — 6/F</p>
+        <p style="font-size:16px;">BİLİŞİM SINIFI PROJESİ</p>
+    </div>
+</div>
+
+<script>
+    const validUsers = [
+        { email: "owner@bilisim.com", password: "12345", role: "owner" },
+        { email: "admin@bilisim.com", password: "admin", role: "admin" },
+        { email: "student@bilisim.com", password: "student", role: "student" }
+    ];
+
+    let loggedInUser = null;
+    let announcements = JSON.parse(localStorage.getItem('bs_announcements')) || [];
+    let bannedEmails = JSON.parse(localStorage.getItem('bs_banned_emails')) || [];
+
+    // --- WALLPAPER ---
+    function changeWallpaper(input) {
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.body.style.backgroundImage = `url(${e.target.result})`;
+                if(loggedInUser) localStorage.setItem('wp_' + loggedInUser.email, e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+    function resetWallpaper() {
+        document.body.style.backgroundImage = "none";
+        if(loggedInUser) localStorage.removeItem('wp_' + loggedInUser.email);
+    }
+
+    function login() {
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const displayName = document.getElementById('displayName').value.trim() || email.split('@')[0];
+        
+        if (bannedEmails.includes(email)) {
+            document.getElementById('login-error').innerText = 'Bu hesap yasaklanmıştır!';
+            return;
+        }
+
+        const user = validUsers.find(u => u.email === email && u.password === password);
+        if (!user) { document.getElementById('login-error').innerText = 'Hatalı giriş!'; return; }
+
+        loggedInUser = { ...user, displayName };
+        localStorage.setItem('bs_loggedInUser', JSON.stringify(loggedInUser));
+        showAnnouncementsPage();
+    }
+
+    function showAnnouncementsPage() {
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('announcements-page').style.display = 'block';
+        document.getElementById('wallpaper-setting').style.display = 'flex';
+        document.getElementById('welcome').innerText = `Hoş geldin, ${loggedInUser.displayName}`;
+        
+        const savedWp = localStorage.getItem('wp_' + loggedInUser.email);
+        if(savedWp) document.body.style.backgroundImage = `url(${savedWp})`;
+
+        if (loggedInUser.role !== 'student') {
+            document.getElementById('add-announcement-form').style.display = 'block';
+            document.getElementById('admin-management-panel').style.display = 'block';
+            renderStudentList();
+        }
+        updateAnnouncements();
+    }
+
+    function renderStudentList() {
+        const listDiv = document.getElementById('student-list');
+        const students = validUsers.filter(u => u.role === 'student');
+        listDiv.innerHTML = students.map(s => `
+            <div class="user-item">
+                <span>${s.email}</span>
+                <button class="${bannedEmails.includes(s.email) ? 'unban-btn' : 'ban-btn'}" onclick="toggleBan('${s.email}')">
+                    ${bannedEmails.includes(s.email) ? 'Yasağı Kaldır' : 'Banla'}
+                </button>
+            </div>
+        `).join('');
+    }
+
+    function toggleBan(email) {
+        if (bannedEmails.includes(email)) {
+            bannedEmails = bannedEmails.filter(e => e !== email);
+        } else {
+            if(confirm(email + " banlansın mı?")) bannedEmails.push(email);
+        }
+        localStorage.setItem('bs_banned_emails', JSON.stringify(bannedEmails));
+        renderStudentList();
+    }
+
+    function postAnnouncement() {
+        const title = document.getElementById('announcement-title').value.trim();
+        const content = document.getElementById('announcement-content').value.trim();
+        if (!title || !content) return;
+        announcements.unshift({
+            id: Date.now(), title, content, author: loggedInUser.displayName,
+            authorEmail: loggedInUser.email, createdAt: new Date().toISOString(), comments: []
+        });
+        saveAndUpdate();
+        document.getElementById('announcement-title').value = '';
+        document.getElementById('announcement-content').value = '';
+    }
+
+    function postComment(annId) {
+        const input = document.getElementById(`comment-in-${annId}`);
+        const txt = input.value.trim();
+        if (!txt) return;
+        const ann = announcements.find(a => a.id === annId);
+        ann.comments.push({
+            id: Date.now(), text: txt, author: loggedInUser.displayName, 
+            authorEmail: loggedInUser.email, createdAt: new Date().toISOString()
+        });
+        input.value = '';
+        saveAndUpdate();
+    }
+
+    function deleteComment(annId, commId) {
+        if (!confirm('Yorumu silmek istiyor musunuz?')) return;
+        const ann = announcements.find(a => a.id === annId);
+        ann.comments = ann.comments.filter(c => c.id !== commId);
+        saveAndUpdate();
+    }
+
+    function deleteAnnouncement(id) {
+        if (confirm('Duyuruyu sil?')) {
+            announcements = announcements.filter(a => a.id !== id);
+            saveAndUpdate();
+        }
+    }
+
+    function saveAndUpdate() {
+        localStorage.setItem('bs_announcements', JSON.stringify(announcements));
+        updateAnnouncements();
+    }
+
+    function updateAnnouncements() {
+        const list = document.getElementById('announcements-list');
+        list.innerHTML = announcements.map(ann => `
+            <div class="announcement">
+                ${(loggedInUser.role !== 'student' || loggedInUser.email === ann.authorEmail) ? `<button class="delete-btn" onclick="deleteAnnouncement(${ann.id})">×</button>` : ''}
+                <h2>${ann.title}</h2>
+                <div style="font-size:12px; color:#bbb;">${ann.author} - ${new Date(ann.createdAt).toLocaleString()}</div>
+                <p>${ann.content}</p>
+                <div class="comment-section">
+                    <strong>Yorumlar:</strong>
+                    ${ann.comments.map(c => `
+                        <div class="comment">
+                            <div><span style="font-weight:bold;">${c.author}:</span> <span class="comment-text">${c.text}</span></div>
+                            ${(loggedInUser.role !== 'student' || loggedInUser.email === c.authorEmail) 
+                                ? `<button class="comment-delete-btn" onclick="deleteComment(${ann.id}, ${c.id})">Sil</button>` 
+                                : ''}
+                        </div>
+                    `).join('')}
+                    <input type="text" id="comment-in-${ann.id}" placeholder="Yorum yaz ve Enter'a bas..." onkeydown="if(event.key==='Enter'){event.preventDefault();postComment(${ann.id});}">
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function showCredits() { document.getElementById('credits-screen').style.display = 'block'; }
+    window.addEventListener('keydown', (e) => { if(e.key === 'Backspace') document.getElementById('credits-screen').style.display = 'none'; });
+    function logout() { localStorage.removeItem('bs_loggedInUser'); location.reload(); }
+
+    const saved = localStorage.getItem('bs_loggedInUser');
+    if(saved) { loggedInUser = JSON.parse(saved); showAnnouncementsPage(); }
+</script>
+</body>
+</html>
